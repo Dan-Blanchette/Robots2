@@ -1,7 +1,21 @@
 #!/usr/bin/env python3
+# Author: Dan Blanchette
+# Date: 9-27-23
+# Robotics Systems 2
+# FanucAPI EthernetIP Python Program
+# **********************************************************
+# *                                                        *
+# *  This program routine has our CRX10 robots pick up     *
+# * a dice, place it on a conveyor, retrieve the dice,     *
+# * rotate the payload 90 degrees, and then return it to   *
+# * its original position.                                 *
+# *                                                        *
+# **********************************************************
+
 import sys
 import time
 import random
+"""Robot Contoller FanucAPI package: https://github.com/UofI-CDACS/FANUC-Ethernet_IP_Drivers"""
 from robot_controller import robot
 
 
@@ -30,94 +44,97 @@ def main():
    pose9 = [103.54271697998047,6.595066070556641,-4.173022270202637,1.406548023223877,-87.15010833740234,-1.3322210311889648]
    pose10 = [15.010419845581055,6.595056056976318,-4.173073768615723,1.4033803939819336,-87.15095520019531,17.059005737304688]
    pose11 = [14.409381866455078,22.351255416870117,-53.66278839111328,-0.6160216927528381,-35.430442810058594,17.05632972717285]
+   
+   # Reset the gripper and stop conveyor before moves
+   crx10_dj.conveyor("stop")
    crx10_dj.gripper("open")
    time.sleep(1.5)
 
+   # Home position
    crx10_dj.set_pose(pose1)
    crx10_dj.start_robot()
    time.sleep(1)
 
+   # Approach dice target
    crx10_dj.set_pose(pose2)
    crx10_dj.start_robot()
    time.sleep(1)
-
+   
+   # Close Schunk gripper
    crx10_dj.gripper('close')
    time.sleep(1)
 
+   # Retract arm to carry payload above conveyor 
    crx10_dj.set_pose(pose3)
    crx10_dj.start_robot()
    time.sleep(1)
 
+   # Start the conveyor
    crx10_dj.conveyor('forward')
 
+   # Move to place dice on conveyor
    crx10_dj.set_pose(pose4) 
    crx10_dj.start_robot()
    time.sleep(1)
 
+   # Lower and set dice on conveyor
    crx10_dj.set_pose(pose5)
    crx10_dj.start_robot()
    time.sleep(1)
 
+   # Open gripper
    crx10_dj.gripper('open')
 
+   # Move linearly toward the back of the conveyor
    crx10_dj.set_pose(pose6)
    crx10_dj.start_robot()
    time.sleep(0.5)
 
+   # Position arm over dice and rotate J6 90 Degrees
    crx10_dj.set_pose(pose7)
    crx10_dj.start_robot()
    time.sleep(1)
    
-
+   # while the left sensor is not tripped, keep running
    while (crx10_dj.conveyor_proximity_sensor("left") == 0):
       pass
+   # When the while loop is false(left sensor set to high(1)), stop the conveyor
    crx10_dj.conveyor("stop") # turn conveyor off
 
-   # try:
-   #    conveyor_on = True
-   #    while (conveyor_on):
-   #       right = crx10_dj.conveyor_proximity_sensor("right")
-   #       left = crx10_dj.conveyor_proximity_sensor("left")
-
-   #       # Sensor check
-   #       if not right and left:
-   #          crx10_dj.conveyor("stop")
-   #          conveyor_on = False
-   #          time.sleep(0.5)
-   #          # short delay to check sensor
-   #          time.sleep(0.1)
-   # finally:
-   #       print("Stopping Conveyor Belt....")
-   #       crx10_dj.conveyor("stop")
-   
-
-   
+   # Approach dice
    crx10_dj.set_pose(pose8)
    crx10_dj.start_robot()
    time.sleep(1)
 
+   # Close the gripper
    crx10_dj.gripper("close")
    time.sleep(0.5)
-
+   
+   # Retract arm to clear conveyor
    crx10_dj.set_pose(pose9)
    crx10_dj.start_robot()
    time.sleep(1)
 
+   # J1 rotation back to dice start position 
    crx10_dj.set_pose(pose10)
    crx10_dj.start_robot()
    time.sleep(1)
 
+   # Move down to deposit dice
    crx10_dj.set_pose(pose11)
    crx10_dj.start_robot()
    time.sleep(1)
 
+   # Open gripper
    crx10_dj.gripper("open")
    time.sleep(1)
 
+   # Return to home position
    crx10_dj.set_pose(pose1)
    crx10_dj.start_robot()
    time.sleep(1)
 
+   # Ensure conveyor is stopped
    crx10_dj.conveyor("stop")
 
 if __name__=="__main__":
